@@ -1,16 +1,34 @@
 const fs = require('fs')
+const axios = require('axios')
+
+on("onResourceStart", (resourceName) => {
+    if (GetCurrentResourceName() != resourceName) { return; }
+
+    axios.get('https://raw.githubusercontent.com/Micky014/FiveM-Manifest-Converter/main/fxmanifest.lua', {
+    }).then(function(res) {
+        if (!res.status == 200) { log("Http request error", "error"); return; }
+        let version = GetResourceMetadata(GetCurrentResourceName(), "version");
+        
+        if (!res.data.includes(version)) log(`"manifest_converter" is not up to date, "https://github.com/Micky014/FiveM-Manifest-Converter".`, "warn")
+        if (res.data.includes(version)) log(`"manifest_converter" is up to date.`, "success")
+    }).catch(function(err) { log(`Check update failed`, "error") })
+});
 
 RegisterCommand("manifest", function(src, args, rw) {
     let arg = args[0]
     if (!src == 0 ) { log("This command can only be used in the console.", "error"); return }
-    
+    if (!arg) { { log("Valid arguments: 'find/delete'", "info"); return } }
+
     if (arg == "find") {
+        let foundFiles = false;
         for (let i=0; i<GetNumResources(); i++) {
             let resourceName = GetResourceByFindIndex(i);
             let __resource = LoadResourceFile(resourceName, "__resource.lua");
-            if (__resource) log(`"${resourceName}/__resource.lua" found.`, "info");
+            if (__resource) { log(`"${resourceName}/__resource.lua" found.`, "info"); foundFiles = true}
         }
+        if (!foundFiles) log(`Not files found.`, "info");
     } else if (arg == "delete") {
+        let foundFiles = false;
         for (let i=0; i<GetNumResources(); i++) {
             let resourceName = GetResourceByFindIndex(i);
             let resourcePath = GetResourcePath(resourceName);
@@ -18,6 +36,8 @@ RegisterCommand("manifest", function(src, args, rw) {
             if (__resource) log(`"${resourceName}/__resource.lua" found.`, "info");
         
             if (__resource) {
+                foundFiles = true;
+
                 let metadataFound = false 
                 let oldMetaData = {
                     1: "resource_manifest_version '77731fab-63ca-442c-a67b-abc70f28dfa5'",
@@ -35,7 +55,7 @@ RegisterCommand("manifest", function(src, args, rw) {
                 for (j in oldMetaData) {
                     let metadata = oldMetaData[j]
                     if (__resource.includes(metadata)) { 
-                        log(`[^5${metadata}^0] found in "__resource.lua".`, "info")
+                        log(`[^5${metadata}^0] found in "${resourceName}/__resource.lua".`, "info")
                         let fxmanifest = __resource.replace(metadata, newMetaData);
                         let filePath = `${resourcePath}/__resource.lua`
                         metadataFound = true;
@@ -43,11 +63,11 @@ RegisterCommand("manifest", function(src, args, rw) {
                         fs.unlink(filePath, (err) => {
                             if (err) { log(err, "error"); return }
 
-                            log(`"__resource.lua" file removed.`, "success")
+                            log(`"${resourceName}/__resource.lua" file removed.`, "success")
                             SaveResourceFile(resourceName, "fxmanifest.lua", fxmanifest);
                             
                             fxmanifest = LoadResourceFile(resourceName, "fxmanifest.lua");
-                            if (fxmanifest.includes(newMetaData) && fxmanifest) log(`"__resource.lua" to "fxmanifest.lua" converted.`, "success");
+                            if (fxmanifest.includes(newMetaData) && fxmanifest) log(`"${resourceName}/__resource.lua" to "${resourceName}/fxmanifest.lua" converted.`, "success");
                         })
                     } 
                 } 
@@ -68,7 +88,8 @@ RegisterCommand("manifest", function(src, args, rw) {
                 }
             } 
         }
-    } else { log(`"${arg}" is not a valid argument.`, "error") }
+        if (!foundFiles) log(`Not files found.`, "info");
+    } else { log(`"${arg}" is not a valid argument. Valid arguments: 'find/delete'`, "error") }
 }, false)
 
 function log(str, type) {
