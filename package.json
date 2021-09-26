@@ -1,0 +1,14 @@
+{
+  "name": "manifestconverter",
+  "version": "1.0.0",
+  "description": "__resource.lua to fxmanifest.lua converter",
+  "main": "app.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Micky",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "0.0.1-security"
+  }
+}
