@@ -94,5 +94,12 @@ RegisterCommand("manifest", function (src, args, rw) {
 }, false);
 
 function log(str, type) {
-    console.log(`^1[${type.toUpperCase()}]^0 ${str}`);
+    let clr;
+
+    if(type === "info") clr = 4;
+    else if(type === "warn") clr = 3;
+    else if(type === "success") clr = 2;
+    else if(type === "error") clr = 1;
+
+    console.log(`^${clr}[${type.toUpperCase()}]^0 ${str}`);
 }
