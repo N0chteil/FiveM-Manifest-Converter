@@ -67,11 +67,10 @@ RegisterCommand("manifest", function (src, args, rw) {
 
                         metadataFound = true;
 
-                        SaveResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`, __resource);
-                        backup = LoadResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`);
-
-                        if (backup.includes(newMetaData) && backup) log(`Successfully created backup for ${resourceName}`, "success"), backupSuccess = true;
-                        else log(`An error occurred while creating the backup of ${resourceName}`, "error");
+                        fs.writeFile(`${GetResourcePath(rN)}/backup/backup_${resourceName.toLowerCase()}_${date}`, __resource, function (err) {
+                            if (err) return log(err, "error");
+                            else log(`Successfully created backup for ${resourceName}`, "success"), backupSuccess = true;
+                        });
 
                         if(!backupSuccess) return log(`Conversion process of ${resourceName} stopped because the backup file could not be created`, "error");
 
