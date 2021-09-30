@@ -9,4 +9,4 @@ manifest delete | Find, replace to `fxmanifest.lua` and delete the `__resource.l
 ###### ✅ ~~Find and print the `__resource.lua` files~~
 ###### ✅ ~~Replace to `fxmanifest.lua`~~
 ###### ✅ ~~Delete the `__resource.lua` files~~
-###### ❌ Backup of deleted `__resource.lua` files
+###### ✅ ~~Backup of deleted `__resource.lua` files~~

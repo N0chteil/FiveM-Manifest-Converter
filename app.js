@@ -1,16 +1,20 @@
 const fs = require('fs'),
     axios = require('axios');
 
+let rN;
+
 on("onResourceStart", (resourceName) => {
-    if (GetCurrentResourceName() != resourceName) return;
+    if (GetCurrentResourceName() !== resourceName) return;
 
     axios.get('https://raw.githubusercontent.com/Micky014/FiveM-Manifest-Converter/main/fxmanifest.lua', {}).then(function (res) {
-        if (!res.status == 200) return log("Http request error", "error");
+        if (!res.status === 200) return log("Http request error", "error");
         let version = GetResourceMetadata(GetCurrentResourceName(), "version");
 
+        rN = GetCurrentResourceName();
+
         if (!res.data.includes(version)) log("\"manifest_converter\" is not up to date, \"https://github.com/Micky014/FiveM-Manifest-Converter\".", "warn");
-        if (res.data.includes(version)) log("\"manifest_converter\" is up to date.", "success");
-    }).catch(function (err) { log("Check update failed", "error") })
+        else log("\"manifest_converter\" is up to date.", "success");
+    }).catch(function (err) { log("Check update failed", "error") });
 });
 
 RegisterCommand("manifest", function (src, args, rw) {
@@ -18,7 +22,7 @@ RegisterCommand("manifest", function (src, args, rw) {
     if (!src === 0) return log("This command can only be used in the console.", "error")
     if (!arg) return log("Valid arguments: 'find/delete'", "info");
 
-    if (arg == "find") {
+    if (arg === "find") {
         let foundFiles = false;
         for (let i = 0; i < GetNumResources(); i++) {
             let resourceName = GetResourceByFindIndex(i),
@@ -27,7 +31,7 @@ RegisterCommand("manifest", function (src, args, rw) {
             if (__resource) log(`"${resourceName}/__resource.lua" found.`, "info"), foundFiles = true;
         }
         if (!foundFiles) log("Not files found.", "info");
-    } else if (arg == "delete") {
+    } else if (arg === "delete") {
         let foundFiles = false;
         for (let i = 0; i < GetNumResources(); i++) {
             let resourceName = GetResourceByFindIndex(i),
@@ -57,19 +61,33 @@ RegisterCommand("manifest", function (src, args, rw) {
                     if (__resource.includes(metadata)) {
                         log(`[^5${metadata}^0] found in "${resourceName}/__resource.lua".`, "info");
                         let fxmanifest = __resource.replace(metadata, newMetaData),
-                            filePath = `${resourcePath}/__resource.lua`;
+                            filePath = `${resourcePath}/__resource.lua`,
+                            backupSuccess = false;
 
                         metadataFound = true;
 
+                        fs.unlink(GetResourcePath(rN), (err) => {
+                            if (err) return log(err, "error");
+                            let date = Date.now();
+
+                            SaveResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`, __resource);
+
+                            backup = LoadResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`);
+                            if (backup.includes(newMetaData) && backup) log(`Successfully created backup for ${resourceName}`, "success"), backupSuccess = true;
+                            else log(`An error occurred while creating the backup of ${resourceName}`, "error");
+                        });
+
+                        if(!backupSuccess) return log(`Conversion process of ${resourceName} stopped because the backup file could not be created`, "error");
+
                         fs.unlink(filePath, (err) => {
-                            if (err) return log(err, "error")
+                            if (err) return log(err, "error");
 
                             log(`"${resourceName}/__resource.lua" file removed.`, "success");
                             SaveResourceFile(resourceName, "fxmanifest.lua", fxmanifest);
 
                             fxmanifest = LoadResourceFile(resourceName, "fxmanifest.lua");
                             if (fxmanifest.includes(newMetaData) && fxmanifest) log(`"${resourceName}/__resource.lua" to "${resourceName}/fxmanifest.lua" converted.`, "success");
-                        })
+                        });
                     }
                 }
 
