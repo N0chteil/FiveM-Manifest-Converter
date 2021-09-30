@@ -1,6 +1,6 @@
 {
   "name": "manifestconverter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "__resource.lua to fxmanifest.lua converter",
   "main": "app.js",
   "scripts": {
