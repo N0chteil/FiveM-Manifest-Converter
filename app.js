@@ -8,9 +8,9 @@ on("onResourceStart", (resourceName) => {
         if (!res.status == 200) return log("Http request error", "error");
         let version = GetResourceMetadata(GetCurrentResourceName(), "version");
 
-        if (!res.data.includes(version)) log(`"manifest_converter" is not up to date, "https://github.com/Micky014/FiveM-Manifest-Converter".`, "warn");
-        if (res.data.includes(version)) log(`"manifest_converter" is up to date.`, "success");
-    }).catch(function (err) { log(`Check update failed`, "error") })
+        if (!res.data.includes(version)) log("\"manifest_converter\" is not up to date, \"https://github.com/Micky014/FiveM-Manifest-Converter\".", "warn");
+        if (res.data.includes(version)) log("\"manifest_converter\" is up to date.", "success");
+    }).catch(function (err) { log("Check update failed", "error") })
 });
 
 RegisterCommand("manifest", function (src, args, rw) {
@@ -26,7 +26,7 @@ RegisterCommand("manifest", function (src, args, rw) {
 
             if (__resource) log(`"${resourceName}/__resource.lua" found.`, "info"), foundFiles = true;
         }
-        if (!foundFiles) log(`Not files found.`, "info");
+        if (!foundFiles) log("Not files found.", "info");
     } else if (arg == "delete") {
         let foundFiles = false;
         for (let i = 0; i < GetNumResources(); i++) {
@@ -57,14 +57,14 @@ RegisterCommand("manifest", function (src, args, rw) {
                     if (__resource.includes(metadata)) {
                         log(`[^5${metadata}^0] found in "${resourceName}/__resource.lua".`, "info");
                         let fxmanifest = __resource.replace(metadata, newMetaData),
-                            filePath = `${resourcePath}/__resource.lua`
+                            filePath = `${resourcePath}/__resource.lua`;
 
                         metadataFound = true;
 
                         fs.unlink(filePath, (err) => {
                             if (err) return log(err, "error")
 
-                            log(`"${resourceName}/__resource.lua" file removed.`, "success")
+                            log(`"${resourceName}/__resource.lua" file removed.`, "success");
                             SaveResourceFile(resourceName, "fxmanifest.lua", fxmanifest);
 
                             fxmanifest = LoadResourceFile(resourceName, "fxmanifest.lua");
@@ -89,13 +89,10 @@ RegisterCommand("manifest", function (src, args, rw) {
                 }
             }
         }
-        if (!foundFiles) log(`Not files found.`, "info");
+        if (!foundFiles) log("Not files found.", "info");
     } else log("\"${arg}\" is not a valid argument. Valid arguments: 'find/delete'", "error");
 }, false);
 
 function log(str, type) {
-    if (type == "info") console.log(`^4[INFO]^0 ${str}`);
-    else if (type == "warn") console.log(`^3[WARN]^0 ${str}`);
-    else if (type == "success") console.log(`^2[SUCCESS]^0 ${str}`);
-    else if (type == "error") console.log(`^1[ERROR]^0 ${str}`);
+    console.log(`^1[${type.toUpperCase()}]^0 ${str}`);
 }
