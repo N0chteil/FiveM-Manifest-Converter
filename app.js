@@ -62,20 +62,16 @@ RegisterCommand("manifest", function (src, args, rw) {
                         log(`[^5${metadata}^0] found in "${resourceName}/__resource.lua".`, "info");
                         let fxmanifest = __resource.replace(metadata, newMetaData),
                             filePath = `${resourcePath}/__resource.lua`,
-                            backupSuccess = false;
+                            backupSuccess = false,
+                            date = Date.now();
 
                         metadataFound = true;
 
-                        fs.unlink(GetResourcePath(rN), (err) => {
-                            if (err) return log(err, "error");
-                            let date = Date.now();
+                        SaveResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`, __resource);
+                        backup = LoadResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`);
 
-                            SaveResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`, __resource);
-
-                            backup = LoadResourceFile(rN, `backup_${resourceName.toLowerCase()}_${date}`);
-                            if (backup.includes(newMetaData) && backup) log(`Successfully created backup for ${resourceName}`, "success"), backupSuccess = true;
-                            else log(`An error occurred while creating the backup of ${resourceName}`, "error");
-                        });
+                        if (backup.includes(newMetaData) && backup) log(`Successfully created backup for ${resourceName}`, "success"), backupSuccess = true;
+                        else log(`An error occurred while creating the backup of ${resourceName}`, "error");
 
                         if(!backupSuccess) return log(`Conversion process of ${resourceName} stopped because the backup file could not be created`, "error");
 
